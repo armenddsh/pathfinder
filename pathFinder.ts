@@ -34,7 +34,7 @@ export default class PathFinder {
         return grid;
     }
 
-    public addSpotsToArea(positionStart: Position, area: Area, gridArea: GridArea): GridArea {
+    public addSpotsToArea(positionStart: Position, area: Area, gridArea: GridArea): void {
         for (let x = 0; x < area.width; x++) {
             for (let y = 0; y < area.height; y++) {
                 const positionX = positionStart.x + x;
@@ -43,7 +43,5 @@ export default class PathFinder {
                 gridArea[positionX][positionY].w = true;    
             }
         }
-        
-        return gridArea;
     }
 }
