@@ -1,2 +1,2 @@
 # pathfinder
-Find the paths using Greedy Algorithme
+Find the paths using Greedy Algorithm
