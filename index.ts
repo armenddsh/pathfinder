@@ -18,7 +18,7 @@ const dispayPath = (positions: Spot[], gridArea: GridArea) => {
             } else if (cell.w) {
                 text += " X ";
             } else {
-                text += "   ";
+                text += " . ";
             }
         }
         console.log(text);
@@ -44,6 +44,7 @@ const pf = new PathFinder({ width: 40, height: 40 });
 let gridArea = pf.createArea();
 
 const start: Position = { x: 2, y: 2, width: 5, height: 5 };
+const middle: Position = { x: 2, y: 12, width: 5, height: 5 };
 const end: Position = { x: 24, y: 24, width: 5, height: 5 };
 
 const spots: Spots = { openList: [], closedList: [] };
@@ -51,10 +52,13 @@ const spots: Spots = { openList: [], closedList: [] };
 displayArea("Area", gridArea); // Area
 
 pf.addSpotsToArea(start, gridArea);
+pf.addSpotsToArea(middle, gridArea);
 pf.addSpotsToArea(end, gridArea);
+
+spots.closedList.push()
 
 displayArea("Area with Spots", gridArea); // Area with Spots
 
-const positions = pf.findPath(start, end, spots);
+const positions = pf.findPath(start, end, spots, gridArea);
 
 dispayPath(positions, gridArea);

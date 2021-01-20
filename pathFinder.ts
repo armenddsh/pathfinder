@@ -10,7 +10,7 @@ export type Spot = { x: number; y: number; w: boolean; h: number; neighbors: Spo
 export default class PathFinder {
     constructor(public area: Area) { }
 
-    public findPath(start: Start, end: End, spots: Spots): Spot[] {
+    public findPath(start: Start, end: End, spots: Spots, area: GridArea): Spot[] {
         const path: Spot[] = []; 
 
         start = this.calculateStartPosition(start);
@@ -26,15 +26,16 @@ export default class PathFinder {
                 path.push(current);
                 return path;
             }
-            current.h = this.calculateHuristicValue({ x: current.x, y: current.y }, end);
-            this.addNeighbors({ x: current.x, y: current.y }, end ,current.neighbors);
             
-            const shortestNeighbor = current.neighbors.sort((a,b) => b.h - a.h).pop();
+            current.h = this.calculateHuristicValue({ x: current.x, y: current.y }, end);
+            this.addNeighbors({ x: current.x, y: current.y }, end ,current.neighbors, area);
+            
+            const shortestNeighbor = current.neighbors.sort((a,b) => b.h - a.h).filter(f => f.w === false).pop();
 
             spots.closedList.push(current);
             spots.openList.push(shortestNeighbor);
 
-            path.push(shortestNeighbor);
+            path.push(shortestNeighbor);   
         }
 
         return [];
@@ -57,16 +58,16 @@ export default class PathFinder {
         return Math.abs(start.x - end.x) + Math.abs(start.y - end.y);
     }
 
-    private addNeighbors(current: Position, goal: Position, neighbors: Spot[]) {
+    private addNeighbors(current: Position, goal: Position, neighbors: Spot[], area: GridArea) {
         const hx = Math.abs((current.x + 1) - goal.x) + Math.abs((current.y) - goal.y);
         const hy = Math.abs((current.x - 1) - goal.x) + Math.abs((current.y) - goal.y);
         const hz = Math.abs((current.x) - goal.x) + Math.abs((current.y + 1) - goal.y);
         const hk = Math.abs((current.x) - goal.x) + Math.abs((current.y - 1) - goal.y);
 
-        neighbors.push({ x: current.x + 1, y: current.y, neighbors: [], w: false, h: hx });
-        neighbors.push({ x: current.x - 1, y: current.y, neighbors: [], w: false, h: hy });
-        neighbors.push({ x: current.x, y: current.y + 1, neighbors: [], w: false, h: hz });
-        neighbors.push({ x: current.x, y: current.y - 1, neighbors: [], w: false, h: hk });
+        neighbors.push({ x: current.x + 1, y: current.y, neighbors: [], w: area[current.x + 1][current.y].w ||  false, h: hx });
+        neighbors.push({ x: current.x - 1, y: current.y, neighbors: [], w: area[current.x - 1][current.y].w ||  false, h: hy });
+        neighbors.push({ x: current.x, y: current.y + 1, neighbors: [], w: area[current.x][current.y + 1].w ||  false, h: hz });
+        neighbors.push({ x: current.x, y: current.y - 1, neighbors: [], w: area[current.x][current.y - 1].w ||  false, h: hk });
     }
 
     public createArea(area?: Area): GridArea {
