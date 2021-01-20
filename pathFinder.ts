@@ -87,6 +87,45 @@ export default class PathFinder {
         return grid;
     }
 
+    public optimizePathSVG(positions: Spot[]): string {
+        let path = "";
+        const positionReduced: Spot[] = [];
+        let previous: { x : number, y: number };
+        for (let x = 0; x < positions.length; x++) {
+            const element = positions[x];
+            if (x === 0) {
+                previous = element;
+                positionReduced.push(element);
+                continue;
+            }
+            if (element.x === previous.x || element.y === previous.y) {
+                continue;
+            } else {
+                positionReduced.push(positions[x - 1]);
+                positionReduced.push(element);
+                previous = element;
+            }
+            if ( x === positions.length - 1) {
+                positionReduced.push(element);
+            }
+        }
+        
+        const paths: string[] = [];
+        for (let x = 0; x < positionReduced.length; x++) {
+            const element = positionReduced[x];
+            let p: string;
+            if (x === 0) {
+                p = `M ${element.x} ${element.y}`;
+                paths.push(p);
+                continue;
+            }
+            p = `L ${element.x} ${element.y}`;
+            paths.push(p);
+        }
+
+        return paths.join(" ");
+    }
+
     public addSpotsToArea(position: Position, gridArea: GridArea): void {
         for (let x = 0; x < position.width; x++) {
             for (let y = 0; y < position.height; y++) {

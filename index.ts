@@ -62,3 +62,4 @@ displayArea("Area with Spots", gridArea); // Area with Spots
 const positions = pf.findPath(start, end, spots, gridArea);
 
 dispayPath(positions, gridArea);
+console.log(pf.optimizePathSVG(positions));
