@@ -14,11 +14,11 @@ const dispayPath = (positions: Spot[], gridArea: GridArea) => {
             const cell = gridArea[x][y];
             const position = positions.find( x => x.x === cell.x && x.y === cell.y);
             if (position) {
-                text += " O ";
+                text += " + ";
             } else if (cell.w) {
                 text += " X ";
             } else {
-                text += " . ";
+                text += "   ";
             }
         }
         console.log(text);
