@@ -22,7 +22,8 @@ export default class PathFinder {
         start = this.calculateStartPosition(start);
         end = this.calculateEndPosition(end);
 
-        spots.openList.push({ x: start.x, y: start.y, w: false, h: 0, neighbors: [], g: 0, f: 0, p: null });
+        spots.openList.push({ x: start.x, y: start.y, w: false, 
+            h: this.calculateHuristicValue({ x: start.x, y: start.y }, end), neighbors: [], g: 0, f: 0, p: null });
 
         while (spots.openList.length > 0) {
             const current = spots.openList.sort((a,b) => b.h - a.h).pop();
@@ -46,20 +47,20 @@ export default class PathFinder {
                 if (!spots.closedList.includes(neighbor) && !neighbor.w) {
                     const tempG = current.g + 1;
                     let newPath = false;
-                    if (spots.openList.includes(neighbor)) {
+                    if (spots.openList.find(n => n.x === neighbor.x && n.y === neighbor.y)) {
                         if (tempG < neighbor.g) {
                             neighbor.g = tempG;
                         }
                     } else {
                         neighbor.g = tempG;
-                        newPath = true;
-                        spots.openList.push(neighbor);
+                        newPath = true;   
                     }
-
+                    
                     if (newPath) {
                         neighbor.h = this.calculateHuristicValue({ x: current.x, y: current.y }, end);
                         neighbor.f = neighbor.g + neighbor.h;
                         neighbor.p = current;
+                        spots.openList.push(neighbor);
                     }
                     
                 }
@@ -103,7 +104,37 @@ export default class PathFinder {
         if (current.y > 0) {
             current.neighbors.push(area[current.x][current.y - 1]);
         }
+        if (current.x > 0 && current.y > 0) {
+            current.neighbors.push(area[current.x - 1][current.y - 1]);
+        }
+        if (current.x < cols - 1 && current.y > 0) {
+            current.neighbors.push(area[current.x + 1][current.y - 1]);
+        }
+        if (current.x > 0 && current.y < rows - 1) {
+            current.neighbors.push(area[current.x - 1][current.y + 1]);
+        }
+        if (current.x < cols - 1 && current.y < rows - 1) {
+            current.neighbors.push(area[current.x + 1][current.y + 1]);
+        }
     }
+
+    public dispayPath = (positions: Spot[], gridArea: GridArea) => {
+        for (let y = 0; y < gridArea.length; y++) {
+            let text = "";
+            for (let x = 0; x < gridArea[y].length; x++) {
+                const cell = gridArea[x][y];
+                const position = positions.find( x => x.x === cell.x && x.y === cell.y);
+                if (position) {
+                    text += " + ";
+                } else if (cell.w) {
+                    text += " X ";
+                } else {
+                    text += " . ";
+                }
+            }
+            console.log(text);
+        }
+    };
 
     public createArea(area?: Area): GridArea {
         const gridArea = area ? area : this.area;

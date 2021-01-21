@@ -40,21 +40,17 @@ const displaySpots = (gridArea: GridArea) => {
     }
 };
 
-const pf = new PathFinder({ width: 40, height: 40 });
+const pf = new PathFinder({ width: 6, height: 6 });
 let gridArea = pf.createArea();
 
-const start: Position = { x: 3, y: 2, width: 5, height: 5 };
-const middle1: Position = { x: 10, y: 12, width: 5, height: 5 };
-const middle2: Position = { x: 7, y: 22, width: 5, height: 5 };
-const end: Position = { x: 24, y: 24, width: 5, height: 5 };
+const start: Position = { x: 0, y: 0, width: 1, height: 1 };
+const end: Position = { x: 5, y: 5, width: 1, height: 1 };
 
 const spots: Spots = { openList: [], closedList: [] };
 
 displayArea("Area", gridArea); // Area
 
 pf.addSpotsToArea(start, gridArea);
-pf.addSpotsToArea(middle1, gridArea);
-pf.addSpotsToArea(middle2, gridArea);
 pf.addSpotsToArea(end, gridArea);
 
 spots.closedList.push()
