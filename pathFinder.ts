@@ -5,11 +5,16 @@ export type Spots = { openList: Spot[]; closedList: Spot[]; };
 export type Position = { x: number; y: number, width?: number, height?: number };
 export type Start = Position;
 export type End = Position;
-export type Spot = { x: number; y: number; w: boolean; h: number; neighbors: Spot[] };
+export type Spot = { x: number; y: number; w: boolean; h: number; neighbors: Spot[], g: number, f: number, p: Spot | null };
 export type Polyline = { coodinates: string, markup: string };
 
 export default class PathFinder {
     constructor(public area: Area) { }
+
+    private removeFromArray(item: Spot, array: Spot[]) {
+        const index = array.indexOf(item);
+        array.splice(index, 1);
+    }
 
     public findPath(start: Start, end: End, spots: Spots, area: GridArea): Spot[] {
         const path: Spot[] = []; 
@@ -17,26 +22,49 @@ export default class PathFinder {
         start = this.calculateStartPosition(start);
         end = this.calculateEndPosition(end);
 
-        // Mark the source cell as visited
-        //spots.closedList.push({ x: start.x, y: start.y, w: false });
-        spots.openList.push({ x: start.x, y: start.y, w: false, h: 0, neighbors: [] });
+        spots.openList.push({ x: start.x, y: start.y, w: false, h: 0, neighbors: [], g: 0, f: 0, p: null });
 
         while (spots.openList.length > 0) {
-            const current = spots.openList.pop() as Spot;
+            const current = spots.openList.sort((a,b) => b.h - a.h).pop();
+            this.addNeighbors(current, area);
             if (current.x === end.x && current.y === end.y) {
-                path.push(current);
+                let c = current;
+                while(c != null) {
+                    path.push(c);
+                    c = c.p;
+                }
+                
                 return path;
             }
-            
-            current.h = this.calculateHuristicValue({ x: current.x, y: current.y }, end);
-            this.addNeighbors({ x: current.x, y: current.y }, end ,current.neighbors, area);
-            
-            const shortestNeighbor = current.neighbors.sort((a,b) => b.h - a.h).filter(f => f.w === false).pop();
 
+            this.removeFromArray(current, spots.openList);
             spots.closedList.push(current);
-            spots.openList.push(shortestNeighbor);
 
-            path.push(shortestNeighbor);   
+            for (let x = 0; x < current.neighbors.length; x++) {
+                const neighbor = current.neighbors[x] as Spot;
+                neighbor.neighbors = [];
+                if (!spots.closedList.includes(neighbor) && !neighbor.w) {
+                    const tempG = current.g + 1;
+                    let newPath = false;
+                    if (spots.openList.includes(neighbor)) {
+                        if (tempG < neighbor.g) {
+                            neighbor.g = tempG;
+                        }
+                    } else {
+                        neighbor.g = tempG;
+                        newPath = true;
+                        spots.openList.push(neighbor);
+                    }
+
+                    if (newPath) {
+                        neighbor.h = this.calculateHuristicValue({ x: current.x, y: current.y }, end);
+                        neighbor.f = neighbor.g + neighbor.h;
+                        neighbor.p = current;
+                    }
+                    
+                }
+            }
+
         }
 
         return [];
@@ -59,16 +87,22 @@ export default class PathFinder {
         return Math.abs(start.x - end.x) + Math.abs(start.y - end.y);
     }
 
-    private addNeighbors(current: Position, goal: Position, neighbors: Spot[], area: GridArea) {
-        const hx = Math.abs((current.x + 1) - goal.x) + Math.abs((current.y) - goal.y);
-        const hy = Math.abs((current.x - 1) - goal.x) + Math.abs((current.y) - goal.y);
-        const hz = Math.abs((current.x) - goal.x) + Math.abs((current.y + 1) - goal.y);
-        const hk = Math.abs((current.x) - goal.x) + Math.abs((current.y - 1) - goal.y);
+    private addNeighbors(current: Spot, area: GridArea) {
+        const cols = area.length;
+        const rows = area[0].length;
 
-        neighbors.push({ x: current.x + 1, y: current.y, neighbors: [], w: area[current.x + 1][current.y].w ||  false, h: hx });
-        neighbors.push({ x: current.x - 1, y: current.y, neighbors: [], w: area[current.x - 1][current.y].w ||  false, h: hy });
-        neighbors.push({ x: current.x, y: current.y + 1, neighbors: [], w: area[current.x][current.y + 1].w ||  false, h: hz });
-        neighbors.push({ x: current.x, y: current.y - 1, neighbors: [], w: area[current.x][current.y - 1].w ||  false, h: hk });
+        if (current.x < cols - 1) {
+            current.neighbors.push(area[current.x + 1][current.y]);
+        }
+        if (current.x > 0) {
+            current.neighbors.push(area[current.x - 1][current.y]);
+        }
+        if (current.y < rows - 1) {
+            current.neighbors.push(area[current.x][current.y + 1]);
+        }
+        if (current.y > 0) {
+            current.neighbors.push(area[current.x][current.y - 1]);
+        }
     }
 
     public createArea(area?: Area): GridArea {
@@ -138,7 +172,7 @@ export default class PathFinder {
                 const positionX = position.x + x;
                 const positionY = position.y + y;
 
-                gridArea[positionX][positionY].w = true;    
+                gridArea[positionX][positionY].w = true;
             }
         }
     }
