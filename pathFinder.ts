@@ -6,6 +6,7 @@ export type Position = { x: number; y: number, width?: number, height?: number }
 export type Start = Position;
 export type End = Position;
 export type Spot = { x: number; y: number; w: boolean; h: number; neighbors: Spot[] };
+export type Polyline = { coodinates: string, markup: string };
 
 export default class PathFinder {
     constructor(public area: Area) { }
@@ -87,7 +88,7 @@ export default class PathFinder {
         return grid;
     }
 
-    public optimizePathSVG(positions: Spot[]): string {
+    public optimizePathSVG(positions: Spot[]): Polyline {
         let path = "";
         const positionReduced: Spot[] = [];
         let previous: { x : number, y: number };
@@ -115,15 +116,20 @@ export default class PathFinder {
             const element = positionReduced[x];
             let p: string;
             if (x === 0) {
-                p = `M ${element.x} ${element.y}`;
+                p = `${element.x} ${element.y}`;
                 paths.push(p);
                 continue;
             }
-            p = `L ${element.x} ${element.y}`;
+            p = `${element.x} ${element.y}`;
             paths.push(p);
         }
 
-        return paths.join(" ");
+        const coordinates = paths.join(", ");
+        const polyLine: Polyline = {
+            coodinates: coordinates,
+            markup: `<polyline points="${coordinates}" fill="none" stroke="black" />`
+        };
+        return polyLine;
     }
 
     public addSpotsToArea(position: Position, gridArea: GridArea): void {
